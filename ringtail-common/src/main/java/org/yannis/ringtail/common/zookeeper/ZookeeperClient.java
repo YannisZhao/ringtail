@@ -1,5 +1,7 @@
 package org.yannis.ringtail.common.zookeeper;
 
+import org.yannis.ringtail.common.zookeeper.enums.NodeType;
+
 import java.util.List;
 
 /**
@@ -7,9 +9,15 @@ import java.util.List;
  */
 public interface ZookeeperClient {
 
-    void create(String path, boolean ephemeral);
+    void create(String path, NodeType nodeType) throws Exception;
 
     void delete(String path);
+
+    void setData(String path, String data);
+
+    void getData(String path);
+
+    boolean isExist(String path);
 
     List<String> getChildren(String path);
 
