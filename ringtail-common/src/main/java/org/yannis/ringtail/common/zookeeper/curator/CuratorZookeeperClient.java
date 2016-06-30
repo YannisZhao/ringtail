@@ -6,12 +6,15 @@ import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.common.zookeeper.AbstractZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.ZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.enums.NodeType;
 import org.yannis.ringtail.common.zookeeper.listeners.ConnectionListener;
+import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
 
 import java.util.List;
 
@@ -23,6 +26,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(CuratorZookeeperClient.class);
 
     private CuratorFramework client;
+
+    private Watcher watcher = new NodeWatcher();
 
     public CuratorZookeeperClient(String[] urls) {
         // RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
@@ -71,6 +76,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     @Override
     public String getData(String path) throws Exception {
         return new String(client.getData().forPath(path));
+    }
+
+    @Override
+    public String getData(String path, NodeListener listener) throws Exception {
+        return new String(client.getData().usingWatcher(watcher).forPath(path));
     }
 
     @Override
@@ -141,6 +151,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
             LOGGER.info("Try to connect to zookeeper server " + urls[0]);
         }
         client.start();
+        try {
+            client.blockUntilConnected();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void onConnectionStateChanged(ConnectionState state, ConnectionListener listener) {
@@ -165,4 +180,31 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
                 break;
         }
     }
+
+    private class NodeWatcher implements Watcher {
+
+        @Override
+        public void process(WatchedEvent watchedEvent) {
+            Event.EventType eventType = watchedEvent.getType();
+            Event.KeeperState keeperState = watchedEvent.getState();
+            String path = watchedEvent.getPath();
+            switch (eventType) {
+                case None:
+                    //Connection Error：Will be auto-reconnect
+                    LOGGER.info("[Watcher],Connecting...");
+                    if (keeperState == Event.KeeperState.SyncConnected) {
+                        LOGGER.info("[Watcher],Connected...");
+                        //check if ephemeral node available etc.
+                    }
+                    break;
+                case NodeCreated:
+                    LOGGER.info("[Watcher],NodeCreated:" + path);
+                    break;
+                case NodeDeleted:
+                    LOGGER.info("[Watcher],NodeDeleted:" + path);
+                    break;
+            }
+        }
+    }
+
 }

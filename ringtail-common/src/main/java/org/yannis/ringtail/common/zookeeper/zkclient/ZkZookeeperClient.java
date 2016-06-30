@@ -3,6 +3,7 @@ package org.yannis.ringtail.common.zookeeper.zkclient;
 import org.yannis.ringtail.common.zookeeper.AbstractZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.enums.NodeType;
 import org.yannis.ringtail.common.zookeeper.listeners.ConnectionListener;
+import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
 
 import java.util.List;
 
@@ -31,6 +32,11 @@ public class ZkZookeeperClient extends AbstractZookeeperClient {
 
     @Override
     public String getData(String path) throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getData(String path, NodeListener listener) throws Exception {
         return null;
     }
 

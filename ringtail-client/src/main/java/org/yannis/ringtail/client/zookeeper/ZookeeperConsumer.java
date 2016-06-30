@@ -30,4 +30,5 @@ public class ZookeeperConsumer extends AbstractConsumer {
     protected void doUnsubscribe() {
 
     }
+
 }

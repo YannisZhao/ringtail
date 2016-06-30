@@ -1,6 +1,7 @@
 package org.yannis.ringtail.common.zookeeper;
 
 import org.yannis.ringtail.common.zookeeper.enums.NodeType;
+import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ public interface ZookeeperClient {
     void setData(String path, String data) throws Exception;
 
     String getData(String path) throws Exception;
+
+    String getData(String path, NodeListener listener) throws Exception;
 
     boolean isExist(String path) throws Exception;
 
