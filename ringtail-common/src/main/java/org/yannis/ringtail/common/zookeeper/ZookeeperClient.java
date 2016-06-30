@@ -11,15 +11,15 @@ public interface ZookeeperClient {
 
     void create(String path, NodeType nodeType) throws Exception;
 
-    void delete(String path);
+    void delete(String path) throws Exception;
 
-    void setData(String path, String data);
+    void setData(String path, String data) throws Exception;
 
-    void getData(String path);
+    String getData(String path) throws Exception;
 
-    boolean isExist(String path);
+    boolean isExist(String path) throws Exception;
 
-    List<String> getChildren(String path);
+    List<String> getChildren(String path) throws Exception;
 
     /*List<String> addChildListener(String path, ChildListener listener);
 
