@@ -2,6 +2,7 @@ package org.yannis.ringtail.common.zookeeper.curator;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
@@ -16,6 +17,8 @@ import org.yannis.ringtail.common.zookeeper.enums.NodeType;
 import org.yannis.ringtail.common.zookeeper.listeners.ConnectionListener;
 import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,7 +30,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
 
     private CuratorFramework client;
 
-    private Watcher watcher = new NodeWatcher();
+    private NodeWatcher watcher = new NodeWatcher();
 
     public CuratorZookeeperClient(String[] urls) {
         // RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
@@ -80,6 +83,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
 
     @Override
     public String getData(String path, NodeListener listener) throws Exception {
+        if(listener == null){
+            throw new IllegalArgumentException("NodeListener cannot be null, or you may want to invoke method getDate(String path) instead.");
+        }
+        watcher.addNodeListener(listener);
         return new String(client.getData().usingWatcher(watcher).forPath(path));
     }
 
@@ -95,7 +102,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
 
     @Override
     public boolean isAlive() {
-        return false;
+        return client.getZookeeperClient().isConnected();
     }
 
     @Override
@@ -181,29 +188,48 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
         }
     }
 
-    private class NodeWatcher implements Watcher {
+    private class NodeWatcher implements CuratorWatcher {
 
-        @Override
-        public void process(WatchedEvent watchedEvent) {
-            Event.EventType eventType = watchedEvent.getType();
-            Event.KeeperState keeperState = watchedEvent.getState();
-            String path = watchedEvent.getPath();
-            switch (eventType) {
-                case None:
-                    //Connection Error：Will be auto-reconnect
-                    LOGGER.info("[Watcher],Connecting...");
-                    if (keeperState == Event.KeeperState.SyncConnected) {
-                        LOGGER.info("[Watcher],Connected...");
-                        //check if ephemeral node available etc.
+        private List<NodeListener> listeners = new ArrayList<>();
+
+        public NodeWatcher(){
+        }
+
+        public void addNodeListener(NodeListener listener){
+            listeners.add(listener);
+        }
+
+        private void notify(Watcher.Event.EventType type){
+            Iterator<NodeListener> iterator = listeners.iterator();
+            switch (type){
+                case NodeCreated:
+                    while (iterator.hasNext()){
+                        iterator.next().onCreateed(CuratorZookeeperClient.this);
                     }
                     break;
-                case NodeCreated:
-                    LOGGER.info("[Watcher],NodeCreated:" + path);
+                case NodeChildrenChanged:
+                    while (iterator.hasNext()){
+                        iterator.next().onChildrenChanged(CuratorZookeeperClient.this);
+                    }
+                    break;
+                case NodeDataChanged:
+                    while (iterator.hasNext()){
+                        iterator.next().onChanged(CuratorZookeeperClient.this);
+                    }
                     break;
                 case NodeDeleted:
-                    LOGGER.info("[Watcher],NodeDeleted:" + path);
+                    while (iterator.hasNext()){
+                        iterator.next().onDeleted(CuratorZookeeperClient.this);
+                    }
+                    break;
+                case None:
                     break;
             }
+        }
+
+        @Override
+        public void process(WatchedEvent watchedEvent) throws Exception {
+            notify(watchedEvent.getType());
         }
     }
 
