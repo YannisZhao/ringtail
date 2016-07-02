@@ -11,6 +11,7 @@ public class NettyInvoker implements Invoker {
     @Override
     public RpcResponse invoke(RpcRequest request) {
         System.out.println("Service invoked.");
+
         return null;
     }
 }
