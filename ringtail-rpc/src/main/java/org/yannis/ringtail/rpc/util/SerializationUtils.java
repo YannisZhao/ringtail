@@ -11,15 +11,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by dell on 2016/7/2.
+ * Created by dell on 2016/7/4.
  */
-public class SerializationUtil {
-
+public class SerializationUtils {
     private static Map<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
 
     private static Objenesis objenesis = new ObjenesisStd(true);
 
-    private SerializationUtil() {
+    private SerializationUtils() {
     }
 
     @SuppressWarnings("unchecked")

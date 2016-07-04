@@ -1,54 +1,89 @@
 package org.yannis.ringtail.rpc.handler.netty;
 
 import com.alibaba.fastjson.JSON;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.rpc.RpcRequest;
 import org.yannis.ringtail.rpc.RpcResponse;
 import org.yannis.ringtail.rpc.handler.Handler;
 
-import java.util.Date;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by dell on 2016/7/1.
  */
 public class NettyHandler extends SimpleChannelInboundHandler<RpcRequest> implements Handler {
-    @Override
-    public Object handle(RpcRequest request) {
-        return null;
-    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyHandler.class);
+
+    private Map<String, Object> services = new ConcurrentHashMap<String, Object>(){
+        {
+            try {
+                put("org.yannis.ringtail.rpc.proxy.data.Animal", Class.forName("org.yannis.ringtail.rpc.proxy.data.Dog").newInstance());
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest request) throws Exception {
-        System.out.println("Request: "+JSON.toJSONString(request));
+    public void channelRead0(final ChannelHandlerContext ctx, RpcRequest request) throws Exception {
+        LOGGER.info("request arrive");
+        LOGGER.info("Request data: {}", JSON.toJSONString(request));
         RpcResponse response = new RpcResponse();
-        response.setRequestId(request.getRequestId());
-        response.setContent("Success");
+        try {
+            response = handle(request);
+        } catch (Throwable t) {
+            response.setError(t);
+        }
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public RpcResponse handle(RpcRequest request) {
+        String className = request.getClassName();
 
-        RpcResponse response = new RpcResponse();
-        response.setRequestId("E3243223232332");
-        response.setContent(new Date());
+        String methodName = request.getMethodName();
+        Class<?>[] parameterTypes = request.getParameterTypes();
+        Object[] parameters = request.getParameters();
 
-        ChannelFuture f = ctx.writeAndFlush(response);
-        f.addListener(ChannelFutureListener.CLOSE);
-
-        System.out.println("Channel active");
-        while (true) {
-            ctx.writeAndFlush(response); // (3)
-            Thread.sleep(2000);
+        RpcResponse response = null;
+        try {
+            Class<?> service = Class.forName(className);
+            Object serviceBean = services.get(className);
+            Method method = service.getMethod(methodName, parameterTypes);
+            Object obj = method.invoke(serviceBean, parameters);
+            response = new RpcResponse();
+            response.setRequestId(request.getRequestId());
+            response.setResult(obj);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
+
+        LOGGER.info("Response from server: {}", JSON.toJSONString(response));
+        return response;
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        LOGGER.error("server caught exception", cause);
+        ctx.close();
     }
 
 }

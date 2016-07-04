@@ -7,9 +7,10 @@ import java.util.Map;
  */
 public class RpcRequest {
     private String requestId;
-    private String serviceName;
+    private String className;
     private String methodName;
-    private Map<Class, Object> parameters;
+    private Class<?>[] parameterTypes;
+    private Object[] parameters;
 
     public String getRequestId() {
         return requestId;
@@ -19,12 +20,12 @@ public class RpcRequest {
         this.requestId = requestId;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getClassName() {
+        return className;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getMethodName() {
@@ -35,11 +36,19 @@ public class RpcRequest {
         this.methodName = methodName;
     }
 
-    public Map<Class, Object> getParameters() {
+    public Class<?>[] getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public void setParameterTypes(Class<?>[] parameterTypes) {
+        this.parameterTypes = parameterTypes;
+    }
+
+    public Object[] getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<Class, Object> parameters) {
+    public void setParameters(Object[] parameters) {
         this.parameters = parameters;
     }
 }

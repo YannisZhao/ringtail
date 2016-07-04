@@ -1,6 +1,9 @@
 package org.yannis.ringtail.rpc.proxy;
 
 import org.junit.Test;
+import org.yannis.ringtail.rpc.Client;
+import org.yannis.ringtail.rpc.client.netty.NettyClient;
+import org.yannis.ringtail.rpc.proxy.data.Animal;
 
 /**
  * Created by dell on 2016/7/1.
@@ -8,21 +11,12 @@ import org.junit.Test;
 public class ProxyBeanFactoryTest {
     @Test
     public void newInstance() throws Exception {
-        ProxyBeanFactory factory = new ProxyBeanFactory();
+        Client client = new NettyClient();
+        client.connect();
+        ProxyBeanFactory factory = new ProxyBeanFactory(client);
         factory.setInterfaces(Animal.class);
         Animal animal = (Animal) factory.newInstance();
-        animal.run();
+        System.out.println(animal.speek(2, "wauwaauooo"));
     }
 
-    public interface Animal{
-        void run();
-    }
-
-    public class Dog implements Animal{
-
-        @Override
-        public void run() {
-            System.out.print("Dog run fast");
-        }
-    }
 }

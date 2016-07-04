@@ -5,5 +5,6 @@ package org.yannis.ringtail.rpc;
  */
 public interface Client {
     void connect();
-    void send(RpcRequest request);
+    void disconnect();
+    RpcResponse send(RpcRequest request) throws RpcException;
 }

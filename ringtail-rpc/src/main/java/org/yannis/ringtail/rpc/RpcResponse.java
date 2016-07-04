@@ -5,7 +5,8 @@ package org.yannis.ringtail.rpc;
  */
 public class RpcResponse {
     private String requestId;
-    private Object content;
+    private Throwable error;
+    private Object result;
 
     public String getRequestId() {
         return requestId;
@@ -15,11 +16,19 @@ public class RpcResponse {
         this.requestId = requestId;
     }
 
-    public Object getContent() {
-        return content;
+    public Throwable getError() {
+        return error;
     }
 
-    public void setContent(Object content) {
-        this.content = content;
+    public void setError(Throwable error) {
+        this.error = error;
+    }
+
+    public Object getResult() {
+        return result;
+    }
+
+    public void setResult(Object result) {
+        this.result = result;
     }
 }

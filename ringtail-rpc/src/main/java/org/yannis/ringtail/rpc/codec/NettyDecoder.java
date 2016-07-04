@@ -3,18 +3,18 @@ package org.yannis.ringtail.rpc.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import org.yannis.ringtail.rpc.util.SerializationUtil;
+import org.yannis.ringtail.rpc.util.SerializationUtils;
 
 import java.util.List;
 
 /**
- * Created by dell on 2016/7/1.
+ * Created by dell on 2016/7/4.
  */
-public class RpcDecoder extends ByteToMessageDecoder {
+public class NettyDecoder extends ByteToMessageDecoder {
 
     private Class<?> genericClass;
 
-    public RpcDecoder(Class<?> genericClass) {
+    public NettyDecoder(Class<?> genericClass) {
         this.genericClass = genericClass;
     }
 
@@ -34,7 +34,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
         byte[] data = new byte[dataLength];
         in.readBytes(data);
 
-        Object obj = SerializationUtil.deserialize(data, genericClass);
+        Object obj = SerializationUtils.deserialize(data, genericClass);
         out.add(obj);
     }
 }

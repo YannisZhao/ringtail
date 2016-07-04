@@ -6,86 +6,140 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.rpc.Client;
+import org.yannis.ringtail.rpc.RpcException;
 import org.yannis.ringtail.rpc.RpcRequest;
 import org.yannis.ringtail.rpc.RpcResponse;
-import org.yannis.ringtail.rpc.codec.RpcDecoder;
-import org.yannis.ringtail.rpc.codec.RpcEncoder;
+import org.yannis.ringtail.rpc.codec.NettyDecoder;
+import org.yannis.ringtail.rpc.codec.NettyEncoder;
 
 /**
  * Created by dell on 2016/7/2.
  */
 public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implements Client {
 
-    private ChannelFuture future;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyClient.class);
+
+    private Channel channel;
 
     private RpcResponse response;
+
+    private EventLoopGroup workerGroup;
+
+    public NettyClient(){
+        workerGroup = new NioEventLoopGroup();
+    }
 
     @Override
     public void connect() {
         String host = "127.0.0.1";
         int port = 8080;
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
-            Bootstrap b = new Bootstrap(); // (1)
-            b.group(workerGroup); // (2)
-            b.channel(NioSocketChannel.class); // (3)
-            b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
-            b.handler(new ChannelInitializer<SocketChannel>() {
+            Bootstrap bootstrap = new Bootstrap(); // (1)
+            bootstrap.group(workerGroup); // (2)
+            bootstrap.channel(NioSocketChannel.class); // (3)
+            bootstrap.option(ChannelOption.SO_KEEPALIVE, true); // (4)
+            bootstrap.option(ChannelOption.TCP_NODELAY, true);
+            bootstrap.option(ChannelOption.SO_TIMEOUT, 5000);
+            bootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline()
-                            .addLast(new RpcEncoder(RpcRequest.class))
-                            .addLast(new RpcDecoder(RpcResponse.class))
+                            .addLast(new NettyEncoder(RpcRequest.class))
+                            .addLast(new NettyDecoder(RpcResponse.class))
                             .addLast(NettyClient.this);
                 }
             });
 
             // Start the client.
-            ChannelFuture future = b.connect(host, port).sync(); // (5)
-            System.out.println("Connected to server...");
+            ChannelFuture future = bootstrap.connect(host, port).sync(); // (5)
 
-            // Wait until the connection is closed.
-            future.channel().closeFuture().sync();
-            this.future = future;
+            if(future.isSuccess()) {
+                System.out.println("Connected to server...");
+                Channel channel = future.channel();
+                this.channel = channel;
+                // Wait until the connection is closed.
+                //channel.closeFuture().sync();
+            }else {
+                future.cause().printStackTrace();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            workerGroup.shutdownGracefully();
+            //workerGroup.shutdownGracefully();
         }
     }
 
     @Override
-    public void send(RpcRequest request) {
+    public void disconnect() {
+        //workerGroup.shutdownGracefully();
+    }
+
+    @Override
+    public RpcResponse send(RpcRequest request) throws RpcException {
         System.out.println("Prepare invoking...");
+        boolean success = true;
+        int timeout = 0;
+        ChannelFuture future = null;
         try {
-            future.channel().writeAndFlush(request).sync();
 
-            if (response != null) {
-                future.channel().closeFuture().sync();
+            future = channel.writeAndFlush(request).sync();
+
+            /*if(future!=null){
+                future.sync();
+            }*/
+
+            /*if (response != null) {
+                channel.closeFuture().sync();
+            }*/
+            //Thread.sleep(5000);
+            boolean sent = true;
+                if (sent) {
+                    timeout = 30000;
+                    success = future.await(timeout);
+                }
+                Throwable cause = future.cause();
+                if (cause != null) {
+                    throw cause;
+                }
+            } catch (Throwable e) {
+                throw new RpcException("Faild to invoking remote service", e);
             }
-            System.out.println(JSON.toJSONString(response));
-            //return response;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
+            /*synchronized (NettyClient.this) {
+                try {
+                    NettyClient.this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }*/
+
+            if(! success) {
+                throw new RpcException("Failed to send message  in timeout(" + timeout + "ms) limit");
+            }
+            if(future.isSuccess()){
+                LOGGER.info("Response data: {}", JSON.toJSONString(response));
+            }
+            return response;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse response) throws Exception {
         this.response = response;
-        System.out.println("Response: "+response);
+        System.out.println("Response: "+ JSON.toJSONString(response));
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Server connected...");
-        RpcRequest request = new RpcRequest();
+       /* RpcRequest request = new RpcRequest();
         request.setRequestId("1000000001");
-        request.setServiceName("org.yannis.rpc.test.TestService");
+        request.setClassName("org.yannis.rpc.test.TestService");
         ctx.write(request);
-        ctx.flush();
+        ctx.flush();*/
     }
+
+
 }
