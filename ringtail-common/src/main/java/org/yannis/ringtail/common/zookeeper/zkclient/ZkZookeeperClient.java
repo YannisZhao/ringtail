@@ -11,8 +11,8 @@ import java.util.List;
  * Created by yannis on 6/29/16.
  */
 public class ZkZookeeperClient extends AbstractZookeeperClient {
-    public ZkZookeeperClient(String[] urls) {
-        super(urls);
+    public ZkZookeeperClient(String registryAddress) {
+        super(registryAddress);
     }
 
     @Override

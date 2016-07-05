@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.rpc.Client;
+import org.yannis.ringtail.rpc.RpcException;
 import org.yannis.ringtail.rpc.RpcRequest;
 import org.yannis.ringtail.rpc.RpcResponse;
-import org.yannis.ringtail.rpc.client.netty.NettyClient;
 import org.yannis.ringtail.rpc.invoker.Invoker;
 import org.yannis.ringtail.rpc.invoker.netty.NettyInvoker;
 
@@ -44,15 +44,21 @@ public class ProxyBeanFactory implements InvocationHandler {
         Invoker invoker = new NettyInvoker(client);
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
-        request.setClassName(method.getDeclaringClass().getName());
+        request.setInterfaceName(method.getDeclaringClass().getName());
         request.setMethodName(method.getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
-        RpcResponse response = invoker.invoke(request);
-        System.out.println(">>>Remoting process invoked successfully...");
-        System.out.println(">>>Response..."+ JSON.toJSONString(response));
-        if(response != null) {
-            return response.getResult();
+        try{
+            RpcResponse response = invoker.invoke(request);
+            System.out.println(">>>Remoting process invoked successfully...");
+            System.out.println(">>>Response..."+ JSON.toJSONString(response));
+            if(response != null) {
+                if(response.isSuccess()) {
+                    return response.getData();
+                }
+            }
+        }catch (RpcException e){
+            throw new Throwable(e);
         }
         return null;
     }

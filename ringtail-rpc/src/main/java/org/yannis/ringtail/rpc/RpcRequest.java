@@ -1,13 +1,11 @@
 package org.yannis.ringtail.rpc;
 
-import java.util.Map;
-
 /**
  * Created by dell on 2016/7/1.
  */
 public class RpcRequest {
     private String requestId;
-    private String className;
+    private String interfaceName;
     private String methodName;
     private Class<?>[] parameterTypes;
     private Object[] parameters;
@@ -20,12 +18,12 @@ public class RpcRequest {
         this.requestId = requestId;
     }
 
-    public String getClassName() {
-        return className;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getMethodName() {

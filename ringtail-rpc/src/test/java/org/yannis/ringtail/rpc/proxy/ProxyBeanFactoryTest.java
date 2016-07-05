@@ -2,6 +2,7 @@ package org.yannis.ringtail.rpc.proxy;
 
 import org.junit.Test;
 import org.yannis.ringtail.rpc.Client;
+import org.yannis.ringtail.rpc.RpcException;
 import org.yannis.ringtail.rpc.client.netty.NettyClient;
 import org.yannis.ringtail.rpc.proxy.data.Animal;
 
@@ -10,7 +11,7 @@ import org.yannis.ringtail.rpc.proxy.data.Animal;
  */
 public class ProxyBeanFactoryTest {
     @Test
-    public void newInstance() throws Exception {
+    public void newInstance() throws RpcException {
         Client client = new NettyClient();
         client.connect();
         ProxyBeanFactory factory = new ProxyBeanFactory(client);

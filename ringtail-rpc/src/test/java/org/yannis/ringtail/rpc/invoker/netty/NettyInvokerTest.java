@@ -19,7 +19,7 @@ public class NettyInvokerTest {
         client.connect();
         RpcRequest request = new RpcRequest();
         request.setRequestId("E1000000001");
-        request.setClassName("org.yannis.rpc.test.TestService");
+        request.setInterfaceName("org.yannis.rpc.test.TestService");
         Invoker invoker = new NettyInvoker(client);
         RpcResponse response = invoker.invoke(request);
         System.out.print("Invoking response: " + JSON.toJSONString(response));

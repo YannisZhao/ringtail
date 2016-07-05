@@ -12,15 +12,15 @@ public abstract class AbstractZookeeperClient implements ZookeeperClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
-    protected String[] urls;
+    protected String address;
 
     private int timeout = 5000;
 
     //private final String root;
 
 
-    public AbstractZookeeperClient(String[] urls){
-        this.urls = urls;
+    public AbstractZookeeperClient(String address){
+        this.address = address;
     }
 
     @Override

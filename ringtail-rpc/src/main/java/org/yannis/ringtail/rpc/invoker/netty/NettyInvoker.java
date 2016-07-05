@@ -25,6 +25,11 @@ public class NettyInvoker implements Invoker {
     @Override
     public RpcResponse invoke(RpcRequest request) throws RpcException {
         System.out.println("Service invoked.");
-        return client.send(request);
+        RpcResponse response = client.send(request);
+        if(!response.isSuccess()){
+            LOGGER.error(response.getMessage());
+            throw new RpcException(response.getMessage());
+        }
+        return response;
     }
 }

@@ -32,11 +32,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
 
     private NodeWatcher watcher = new NodeWatcher();
 
-    public CuratorZookeeperClient(String[] urls) {
+    public CuratorZookeeperClient(String address) {
         // RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         //String url = "192.168.71.129:2181";
         //client = CuratorFrameworkFactory.newClient(url, retryPolicy);
-        super(urls);
+        super(address);
         connect(new ConnectionListener() {
             @Override
             public void onConnected(ZookeeperClient client) {
@@ -129,12 +129,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     @Override
     protected void connect() {
         client = CuratorFrameworkFactory.builder()
-                .connectString(urls[0])
+                .connectString(address)
                 .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
                 .connectionTimeoutMs(5000)
                 .build();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Try to connect to zookeeper server " + urls[0]);
+            LOGGER.info("Try to connect to zookeeper server " + address);
         }
         client.start();
     }
@@ -142,7 +142,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     @Override
     protected void connect(final ConnectionListener listener) {
         client = CuratorFrameworkFactory.builder()
-                .connectString(urls[0])
+                .connectString(address)
                 //.namespace( "/ringtail" )
                 .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
                 .connectionTimeoutMs(5000)
@@ -155,7 +155,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
             }
         });
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Try to connect to zookeeper server " + urls[0]);
+            LOGGER.info("Try to connect to zookeeper server " + address);
         }
         client.start();
         try {

@@ -19,7 +19,7 @@ public class CuratorZookeeperClientTest {
 
     @Before
     public void init(){
-        client = new CuratorZookeeperClient(new String[]{"192.168.71.129:2181"});
+        client = new CuratorZookeeperClient("192.168.71.129:2181");
     }
 
     @After

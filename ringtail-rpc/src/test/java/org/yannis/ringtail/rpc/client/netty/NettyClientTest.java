@@ -16,7 +16,7 @@ public class NettyClientTest {
         client.connect();
         RpcRequest request = new RpcRequest();
         request.setRequestId("E1000000001");
-        request.setClassName("org.yannis.rpc.test.TestService");
+        request.setInterfaceName("org.yannis.rpc.test.TestService");
         client.send(request);
         while (true);
     }

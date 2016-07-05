@@ -51,7 +51,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<RpcRequest> implem
 
     @Override
     public RpcResponse handle(RpcRequest request) {
-        String className = request.getClassName();
+        String className = request.getInterfaceName();
 
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
@@ -63,16 +63,21 @@ public class NettyHandler extends SimpleChannelInboundHandler<RpcRequest> implem
             Object serviceBean = services.get(className);
             Method method = service.getMethod(methodName, parameterTypes);
             Object obj = method.invoke(serviceBean, parameters);
-            response = new RpcResponse();
+            response = RpcResponse.SUCCESS;
             response.setRequestId(request.getRequestId());
-            response.setResult(obj);
+            response.setData(obj);
         } catch (ClassNotFoundException e) {
+            response = RpcResponse.SERVICE_NOT_FOUND;
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
+            response = RpcResponse.METHOD_NOT_FOUND;
             e.printStackTrace();
         } catch (IllegalAccessException e) {
+            //If access private method, then return method not found
+            response = RpcResponse.METHOD_NOT_FOUND;
             e.printStackTrace();
         } catch (InvocationTargetException e) {
+            response = RpcResponse.SERVER_ERROR;
             e.printStackTrace();
         }
 
