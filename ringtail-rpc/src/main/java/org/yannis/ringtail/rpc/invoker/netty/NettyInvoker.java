@@ -23,6 +23,9 @@ public class NettyInvoker implements Invoker {
     private List<Client> clients;
 
     public NettyInvoker(List<String> providerAddresses) {
+        if(providerAddresses == null || 0 == providerAddresses.size()){
+            throw new IllegalArgumentException("provider server address cannot be empty");
+        }
         clients = new ArrayList<>();
         for (String address : providerAddresses) {
             String[] addr = address.split(":");

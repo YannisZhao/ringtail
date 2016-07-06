@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.client.AbstractConsumer;
 import org.yannis.ringtail.client.config.ReferenceConfig;
+import org.yannis.ringtail.client.exception.ServiceNotFoundException;
 import org.yannis.ringtail.common.zookeeper.ZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.curator.CuratorZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
@@ -33,12 +34,19 @@ public class ZookeeperConsumer extends AbstractConsumer {
 
     @Override
     protected void doSubscribe(ReferenceConfig config) throws Exception {
+        boolean isSuccess = false;
         for(ZookeeperClient client : clients) {
-            _doSubscribe(client, config);
+            // Search service register to each zookeeper registry
+            if(_doSubscribe(client, config)){
+                isSuccess = true;
+            }
+        }
+        if(!isSuccess){
+            throw new ServiceNotFoundException(String.format("Service %s in application %s not found, please make sure you have already properly references it.", config.getInterfaceName(), config.getAppName()));
         }
     }
 
-    private void _doSubscribe(ZookeeperClient client, ReferenceConfig config) throws Exception {
+    private boolean _doSubscribe(ZookeeperClient client, ReferenceConfig config) throws Exception {
         List<String> children = client.getChildren("/ringtail");
         NodeListener listener = new NodeListener() {
             @Override
@@ -61,7 +69,33 @@ public class ZookeeperConsumer extends AbstractConsumer {
                 LOGGER.info("node deleted.");
             }
         };
-        for (String node : children) {
+        String servicePath = config.toPath();
+
+        if(!client.isExist("/ringtail/"+servicePath)){
+            return false;
+        }
+
+
+        String providerPath = "/ringtail/" + servicePath + "/providers";
+        List<String> providers = client.getChildren(providerPath);
+
+        if(providers == null || 0 == providers.size()){
+            return false;
+        }
+
+        for (final String provider : providers) {
+            if(subscribedServices.get(servicePath) != null){
+                subscribedServices.get(servicePath).add(provider);
+            }else {
+                List<String> address = new ArrayList<String>();
+                address.add(provider);
+                subscribedServices.put(servicePath, address);
+            }
+            LOGGER.info("Service {}, application[{}] on server {} has been subscribed successfully", config.getInterfaceName(), config.getAppName(), provider);
+        }
+
+        return true;
+       /* for (String node : children) {
             System.out.println("Found service: " + node);
             List<String> providers = client.getChildren("/ringtail/" + node + "/providers");
             for (final String provider : providers) {
@@ -74,7 +108,7 @@ public class ZookeeperConsumer extends AbstractConsumer {
                     subscribedServices.put(node, address);
                 }
             }
-        }
+        }*/
     }
 
     @Override

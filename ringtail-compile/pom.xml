@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>ringtail-parent</artifactId>
+        <groupId>org.yannis</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <name>ringtail-compile</name>
+    <version>${project.parent.version}</version>
+    <packaging>jar</packaging>
+
+    <artifactId>ringtail-compile</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-monitor</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-registry</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-rpc</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-client</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ringtail</finalName>
+    </build>
+
+</project>

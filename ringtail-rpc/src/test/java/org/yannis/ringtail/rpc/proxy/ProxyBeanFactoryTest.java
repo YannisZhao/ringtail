@@ -15,10 +15,8 @@ import java.util.List;
 public class ProxyBeanFactoryTest {
     @Test
     public void newInstance() throws RpcException {
-        Client client = new NettyClient();
-        client.connect();
         List<String> providerAddress = new ArrayList<>();
-        providerAddress.add("192.168.71.129:2181");
+        providerAddress.add("192.168.71.129:8080");
         ProxyBeanFactory factory = new ProxyBeanFactory(providerAddress);
         factory.setInterfaces(Animal.class);
         Animal animal = (Animal) factory.newInstance();

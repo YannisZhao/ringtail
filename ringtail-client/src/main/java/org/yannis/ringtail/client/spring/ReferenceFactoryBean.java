@@ -3,6 +3,8 @@ package org.yannis.ringtail.client.spring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.yannis.ringtail.client.config.ReferenceConfig;
 import org.yannis.ringtail.client.zookeeper.ZookeeperConsumer;
 import org.yannis.ringtail.rpc.proxy.ProxyBeanFactory;
@@ -13,7 +15,7 @@ import java.util.Map;
 /**
  * Created by dell on 2016/7/6.
  */
-public class ReferenceFactoryBean implements FactoryBean {
+public class ReferenceFactoryBean implements FactoryBean, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFactoryBean.class);
 
@@ -48,23 +50,7 @@ public class ReferenceFactoryBean implements FactoryBean {
     }
 
     public ReferenceFactoryBean(){
-        String[] registryAddresses = {"192.168.71.129:8080"};
-        ZookeeperConsumer consumer = new ZookeeperConsumer(registryAddresses);
-        ReferenceConfig config = new ReferenceConfig(appName, interfaceName, version);
-        try {
-            consumer.subscribe(config);
-            List<String> providerAddress = null;
 
-            Map<String, List<String>> subscribedServices = consumer.getSubscribedServices();
-            for(String serviceKey : subscribedServices.keySet()){
-                if(serviceKey.equals(toServicePath())){
-                    providerAddress = subscribedServices.get(serviceKey);
-                }
-            }
-            factory = new ProxyBeanFactory(providerAddress);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private String toServicePath() {
@@ -98,5 +84,26 @@ public class ReferenceFactoryBean implements FactoryBean {
     @Override
     public boolean isSingleton() {
         return false;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String[] registryAddresses = {"192.168.71.129:2181"};
+        ZookeeperConsumer consumer = new ZookeeperConsumer(registryAddresses);
+        ReferenceConfig config = new ReferenceConfig(appName, interfaceName, version);
+        try {
+            consumer.subscribe(config);
+            List<String> providerAddress = null;
+
+            Map<String, List<String>> subscribedServices = consumer.getSubscribedServices();
+            for(String serviceKey : subscribedServices.keySet()){
+                if(serviceKey.equals(toServicePath())){
+                    providerAddress = subscribedServices.get(serviceKey);
+                }
+            }
+            factory = new ProxyBeanFactory(providerAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
