@@ -7,12 +7,16 @@ import org.yannis.ringtail.rpc.Client;
 import org.yannis.ringtail.rpc.RpcException;
 import org.yannis.ringtail.rpc.RpcRequest;
 import org.yannis.ringtail.rpc.RpcResponse;
+import org.yannis.ringtail.rpc.client.netty.NettyClient;
 import org.yannis.ringtail.rpc.invoker.Invoker;
 import org.yannis.ringtail.rpc.invoker.netty.NettyInvoker;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -22,21 +26,13 @@ public class ProxyBeanFactory implements InvocationHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyBeanFactory.class);
 
-    private Client client;
-
-    public ProxyBeanFactory(){
-
-    }
-
-    public ProxyBeanFactory(Client client) {
-        this.client = client;
-    }
-
-    public ProxyBeanFactory(String[] registryAddress){
-
-    }
+    private Invoker invoker;
 
     private Class<?> interfaces;
+
+    public ProxyBeanFactory(List<String> providerAddress) {
+        invoker = new NettyInvoker(providerAddress);
+    }
 
     public Object newInstance(){
         return Proxy.newProxyInstance(ProxyBeanFactory.class.getClassLoader(), new Class[]{interfaces}, this);
@@ -49,7 +45,7 @@ public class ProxyBeanFactory implements InvocationHandler {
     }
 
     private Object doInvoke(Method method, Object[] args) throws Throwable {
-        Invoker invoker = new NettyInvoker(client);
+        //Invoker invoker = new NettyInvoker(client);
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
         request.setInterfaceName(method.getDeclaringClass().getName());

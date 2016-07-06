@@ -2,22 +2,26 @@ package org.yannis.ringtail.client.spring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.FactoryBean;
 import org.yannis.ringtail.client.config.ReferenceConfig;
 import org.yannis.ringtail.client.zookeeper.ZookeeperConsumer;
-import org.yannis.ringtail.rpc.Client;
-import org.yannis.ringtail.rpc.client.netty.NettyClient;
 import org.yannis.ringtail.rpc.proxy.ProxyBeanFactory;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dell on 2016/7/6.
  */
-public class ReferenceBeanFactory {
+public class ReferenceFactoryBean implements FactoryBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceBeanFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFactoryBean.class);
 
     private String appName;
     private String interfaceName;
     private String version;
+
+    private ProxyBeanFactory factory;
 
     public String getAppName() {
         return appName;
@@ -43,20 +47,32 @@ public class ReferenceBeanFactory {
         this.version = version;
     }
 
-    public void init(){
-        ZookeeperConsumer consumer = new ZookeeperConsumer();
+    public ReferenceFactoryBean(){
+        String[] registryAddresses = {"192.168.71.129:8080"};
+        ZookeeperConsumer consumer = new ZookeeperConsumer(registryAddresses);
         ReferenceConfig config = new ReferenceConfig(appName, interfaceName, version);
         try {
             consumer.subscribe(config);
+            List<String> providerAddress = null;
+
+            Map<String, List<String>> subscribedServices = consumer.getSubscribedServices();
+            for(String serviceKey : subscribedServices.keySet()){
+                if(serviceKey.equals(toServicePath())){
+                    providerAddress = subscribedServices.get(serviceKey);
+                }
+            }
+            factory = new ProxyBeanFactory(providerAddress);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public Object createBean(){
-        Client client = new NettyClient();
-        client.connect();
-        ProxyBeanFactory factory = new ProxyBeanFactory(client);
+    private String toServicePath() {
+        return appName + "_" + interfaceName + "_" + version;
+    }
+
+    @Override
+    public Object getObject() throws Exception {
         try {
             Class clazz = Class.forName(interfaceName);
             factory.setInterfaces(clazz);
@@ -66,5 +82,21 @@ public class ReferenceBeanFactory {
         }
 
         return factory.newInstance();
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        Class clazz = null;
+        try {
+            clazz = Class.forName(interfaceName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return clazz;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return false;
     }
 }

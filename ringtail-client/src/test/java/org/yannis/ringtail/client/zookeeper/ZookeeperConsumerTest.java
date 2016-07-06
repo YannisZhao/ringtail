@@ -15,7 +15,7 @@ public class ZookeeperConsumerTest {
 
     @Before
     public void init(){
-        consumer = new ZookeeperConsumer();
+        consumer = new ZookeeperConsumer(new String[]{"182.168.71.129:2181"});
     }
 
     @After

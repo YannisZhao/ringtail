@@ -22,6 +22,10 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyClient.class);
 
+    private String host;
+
+    private int port;
+
     private Channel channel;
 
     private RpcResponse response;
@@ -32,10 +36,13 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
         workerGroup = new NioEventLoopGroup();
     }
 
+    public NettyClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
     @Override
     public void connect() {
-        String host = "127.0.0.1";
-        int port = 8080;
 
         try {
             Bootstrap bootstrap = new Bootstrap(); // (1)

@@ -6,6 +6,9 @@ import org.yannis.ringtail.rpc.RpcException;
 import org.yannis.ringtail.rpc.client.netty.NettyClient;
 import org.yannis.ringtail.rpc.proxy.data.Animal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by dell on 2016/7/1.
  */
@@ -14,7 +17,9 @@ public class ProxyBeanFactoryTest {
     public void newInstance() throws RpcException {
         Client client = new NettyClient();
         client.connect();
-        ProxyBeanFactory factory = new ProxyBeanFactory(client);
+        List<String> providerAddress = new ArrayList<>();
+        providerAddress.add("192.168.71.129:2181");
+        ProxyBeanFactory factory = new ProxyBeanFactory(providerAddress);
         factory.setInterfaces(Animal.class);
         Animal animal = (Animal) factory.newInstance();
         System.out.println(animal.speek(2, "wauwaauooo"));
