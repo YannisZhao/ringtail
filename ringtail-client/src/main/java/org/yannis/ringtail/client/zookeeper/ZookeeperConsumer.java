@@ -3,6 +3,7 @@ package org.yannis.ringtail.client.zookeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yannis.ringtail.client.AbstractConsumer;
+import org.yannis.ringtail.client.config.ReferenceConfig;
 import org.yannis.ringtail.common.zookeeper.ZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.curator.CuratorZookeeperClient;
 import org.yannis.ringtail.common.zookeeper.listeners.NodeListener;
@@ -23,7 +24,7 @@ public class ZookeeperConsumer extends AbstractConsumer {
     }
 
     @Override
-    protected void doSubscribe() throws Exception {
+    protected void doSubscribe(ReferenceConfig config) throws Exception {
         List<String> children = client.getChildren("/ringtail");
         NodeListener listener = new NodeListener() {
             @Override
@@ -48,12 +49,15 @@ public class ZookeeperConsumer extends AbstractConsumer {
         };
         for (String node : children) {
             System.out.println("Found service: "+node);
-            System.out.println("Data: "+client.getData("/ringtail/" + node, listener));
+            List<String> providers = client.getChildren("/ringtail/" + node+"/providers");
+            for(String provider : providers){
+                System.out.println("Service provider address: " + provider);
+            }
         }
     }
 
     @Override
-    protected void doUnsubscribe() {
+    protected void doUnsubscribe(ReferenceConfig config) {
 
     }
 

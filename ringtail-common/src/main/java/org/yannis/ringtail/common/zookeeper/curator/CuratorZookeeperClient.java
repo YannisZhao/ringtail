@@ -111,6 +111,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     }
 
     protected void createPersist(String path, boolean sequencial) throws Exception {
+        if(isExist(path)){
+            LOGGER.info("Path[{}] already exists, creation skipped.", path);
+            return;
+        }
         if (sequencial) {
             client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(path);
         } else {
@@ -119,6 +123,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient {
     }
 
     protected void createEphemeral(String path, boolean sequencial) throws Exception {
+        if(isExist(path)){
+            LOGGER.info("Path[{}] already exists, creation skipped.", path);
+            return;
+        }
         if (sequencial) {
             client.create().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(path);
         } else {

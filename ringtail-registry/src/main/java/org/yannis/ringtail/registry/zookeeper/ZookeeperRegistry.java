@@ -36,14 +36,31 @@ public class ZookeeperRegistry extends AbstractRegistry {
             if (serviceConfig != null && serviceConfig.getServices() != null){
                 for(ZookeeperClient client : clients) {
                     for (String serviceURI : serviceConfig.getServices().keySet()) {
-                        client.create(BATHPATH + "/" + serviceURI, NodeType.PERSISTENT);
-                        LOGGER.info("Service {} register to the registry {} successfully", serviceURI, registryAddress);
+                        _doRegister(client, serviceURI);
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void _doRegister(ZookeeperClient client, String serviceURI) throws Exception {
+        String path = BATHPATH + "/" + serviceURI;
+        client.create(path, NodeType.PERSISTENT);
+        String providers = path + "/providers";
+        if(!client.isExist(providers)){
+            client.create(providers, NodeType.PERSISTENT);
+        }
+        // record provider information
+        String pNode = providers + "/"+serviceConfig.getHost() + ":" + serviceConfig.getPort();
+        if(client.isExist(pNode)){
+            LOGGER.info("Service {} already be registered to {}, register skipped.");
+            return;
+        }
+        // create provider node as ephemeral
+        client.create(pNode, NodeType.EPHEMERAL);
+        LOGGER.info("Service {} register to the registry {} successfully", serviceURI, registryAddress);
     }
 
     @Override

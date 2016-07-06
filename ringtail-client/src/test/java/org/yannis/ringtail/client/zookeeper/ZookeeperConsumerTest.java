@@ -25,7 +25,7 @@ public class ZookeeperConsumerTest {
 
     @Test
     public void doSubscribe() throws Exception {
-        consumer.doSubscribe();
+        consumer.doSubscribe(null);
         while (true);
     }
 

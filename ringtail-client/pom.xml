@@ -36,6 +36,11 @@
             <artifactId>ringtail-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.yannis</groupId>
+            <artifactId>ringtail-rpc</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -32,6 +32,10 @@ public class ProxyBeanFactory implements InvocationHandler {
         this.client = client;
     }
 
+    public ProxyBeanFactory(String[] registryAddress){
+
+    }
+
     private Class<?> interfaces;
 
     public Object newInstance(){
@@ -41,6 +45,10 @@ public class ProxyBeanFactory implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         System.out.println(">>>Remoting process invoking starting...");
+        return doInvoke(method, args);
+    }
+
+    private Object doInvoke(Method method, Object[] args) throws Throwable {
         Invoker invoker = new NettyInvoker(client);
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
