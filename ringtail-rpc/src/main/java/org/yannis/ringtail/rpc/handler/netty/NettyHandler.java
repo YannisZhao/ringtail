@@ -26,6 +26,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<RpcRequest> implem
         {
             try {
                 put("org.yannis.ringtail.rpc.proxy.data.Animal", Class.forName("org.yannis.ringtail.rpc.proxy.data.Dog").newInstance());
+                put("org.yannis.ringtail.client.spring.data.Animal", Class.forName("org.yannis.ringtail.rpc.proxy.data.Dog").newInstance());
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {

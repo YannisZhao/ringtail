@@ -4,10 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.yannis.ringtail.client.config.ReferenceConfig;
 import org.yannis.ringtail.client.zookeeper.ZookeeperConsumer;
-import org.yannis.ringtail.rpc.proxy.ProxyBeanFactory;
+import org.yannis.ringtail.rpc.proxy.CglibProxyBeanFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class ReferenceFactoryBean implements FactoryBean, InitializingBean {
     private String interfaceName;
     private String version;
 
-    private ProxyBeanFactory factory;
+    private CglibProxyBeanFactory factory;
 
     public String getAppName() {
         return appName;
@@ -62,12 +61,17 @@ public class ReferenceFactoryBean implements FactoryBean, InitializingBean {
         try {
             Class clazz = Class.forName(interfaceName);
             factory.setInterfaces(clazz);
+            System.out.println("Get bean of class: "+clazz);
         } catch (ClassNotFoundException e) {
             LOGGER.info("No class found that matched the specified interface {} configured in the xml file", interfaceName);
             e.printStackTrace();
         }
 
-        return factory.newInstance();
+        Object obj = factory.getProxy();
+
+        System.out.println("obj class: "+obj.getClass());
+
+        return obj;
     }
 
     @Override
@@ -101,7 +105,7 @@ public class ReferenceFactoryBean implements FactoryBean, InitializingBean {
                     providerAddress = subscribedServices.get(serviceKey);
                 }
             }
-            factory = new ProxyBeanFactory(providerAddress);
+            factory = new CglibProxyBeanFactory(providerAddress);
         } catch (Exception e) {
             e.printStackTrace();
         }

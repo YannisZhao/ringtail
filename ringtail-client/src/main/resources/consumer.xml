@@ -4,15 +4,15 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
               http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="org.yannis.ringtail.client.spring.ReferenceFactoryBean">
+    <!--<bean class="org.yannis.ringtail.client.spring.ReferenceFactoryBean">
         <property name="appName" value="uc"></property>
         <property name="interfaceName" value="org.yannis.test.TestService"></property>
         <property name="version" value="1.0.0"></property>
-    </bean>
+    </bean>-->
 
     <bean class="org.yannis.ringtail.client.spring.ReferenceFactoryBean">
         <property name="appName" value="test"></property>
-        <property name="interfaceName" value="org.yannis.ringtail.rpc.proxy.data.Animal"></property>
+        <property name="interfaceName" value="org.yannis.ringtail.client.spring.data.Animal"></property>
         <property name="version" value="1.0.0"></property>
     </bean>
 

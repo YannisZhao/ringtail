@@ -30,6 +30,7 @@ public class NettyInvoker implements Invoker {
         for (String address : providerAddresses) {
             String[] addr = address.split(":");
             Client client = new NettyClient(addr[0], Integer.parseInt(addr[1]));
+            client.connect();
             clients.add(client);
         }
     }

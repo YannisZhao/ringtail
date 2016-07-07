@@ -37,6 +37,7 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
     }
 
     public NettyClient(String host, int port) {
+        workerGroup = new NioEventLoopGroup();
         this.host = host;
         this.port = port;
     }
@@ -65,9 +66,10 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
             ChannelFuture future = bootstrap.connect(host, port).sync(); // (5)
 
             if(future.isSuccess()) {
-                System.out.println("Connected to server...");
+                System.out.println("Connected to server..."+host+":"+port);
                 Channel channel = future.channel();
                 this.channel = channel;
+                System.out.println("Channel saved..."+channel);
                 // Wait until the connection is closed.
                 //channel.closeFuture().sync();
             }else {
@@ -123,8 +125,13 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
                     e.printStackTrace();
                 }
             }*/
-
-            if(! success) {
+        // Here is a big bug, hahaha^^^
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(! success) {
                 throw new RpcException("Failed to send message  in timeout(" + timeout + "ms) limit");
             }
             if(future.isSuccess()){
@@ -141,11 +148,6 @@ public class NettyClient extends SimpleChannelInboundHandler<RpcResponse> implem
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-       /* RpcRequest request = new RpcRequest();
-        request.setRequestId("1000000001");
-        request.setClassName("org.yannis.rpc.test.TestService");
-        ctx.write(request);
-        ctx.flush();*/
     }
 
 

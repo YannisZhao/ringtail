@@ -2,12 +2,9 @@ package org.yannis.ringtail.client.spring;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.yannis.ringtail.client.spring.data.Animal;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by dell on 2016/7/6.
@@ -21,14 +18,17 @@ public class ReferenceFactoryBeanTest {
     @Autowired
     private Animal animal;
 
+    ClassPathXmlApplicationContext context;
+
     @Before
     public void init(){
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"/consumer.xml"});
+        context = new ClassPathXmlApplicationContext(new String[] {"/consumer.xml"});
         context.start();
     }
 
     @Test
     public void invoke(){
+        Animal animal = context.getBean(Animal.class);
         System.out.println(animal.speek(2, "wauwaauooo"));
     }
 

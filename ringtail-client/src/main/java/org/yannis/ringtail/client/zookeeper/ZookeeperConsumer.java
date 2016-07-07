@@ -47,7 +47,6 @@ public class ZookeeperConsumer extends AbstractConsumer {
     }
 
     private boolean _doSubscribe(ZookeeperClient client, ReferenceConfig config) throws Exception {
-        List<String> children = client.getChildren("/ringtail");
         NodeListener listener = new NodeListener() {
             @Override
             public void onCreateed(ZookeeperClient client) {
